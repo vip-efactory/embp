@@ -136,8 +136,6 @@ public abstract class BaseObservable<M extends BaseMapper<T>, T> extends Service
      * This method is called automatically by the
      * <code>notifyBaseObservers</code> methods.
      *
-     * @see java.util.Observable#notifyBaseObservers()
-     * @see java.util.Observable#notifyBaseObservers(java.lang.Object)
      */
     protected synchronized void clearChanged() {
         changed = false;

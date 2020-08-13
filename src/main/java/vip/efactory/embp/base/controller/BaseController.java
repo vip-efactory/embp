@@ -38,15 +38,11 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
 
     /**
      * Description:获取T的Class对象是关键，看构造方法
-     *
-     * @author dbdu
      */
     private Class<T1> clazz = null;
 
     /**
      * Description:无参构造函数，获得T1的clazz对象
-     *
-     * @author dbdu
      */
     public BaseController() {
         //为了得到T1的Class，采用如下方法
@@ -64,8 +60,7 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
      * Description:高级搜索查询,返回最多300记录的列表,不分页
      *
      * @param entity 含有高级搜索条件的实体
-     * @return vip.efactory.embp.base.util.R
-     * @author dbdu
+     * @return R
      */
     public R getList(@RequestBody T1 entity) {
         // 高级搜索查询,返回最多300记录的列表
@@ -95,8 +90,7 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
      *
      * @param page   分页对象
      * @param entity 含有高级搜索条件的实体
-     * @return vip.efactory.embp.base.util.R
-     * @author dbdu
+     * @return R
      */
     public R getByPage(Page page, T1 entity) {
         // 过滤掉值为null或空串的无效高级搜索条件
@@ -131,8 +125,7 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
      * Description:依据实体的id主键，来查询单个实体的信息
      *
      * @param entityId 实体id,主键
-     * @return vip.efactory.embp.base.util.R
-     * @author dbdu
+     * @return R
      */
     public R getById(Long entityId) {
         return R.ok(entityService.getById(entityId));
@@ -142,8 +135,7 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
      * Description:保存单个实体的信息
      *
      * @param entity 要保存的对象
-     * @return vip.efactory.embp.base.util.R
-     * @author dbdu
+     * @return R
      */
     public R save(T1 entity) {
         entityService.save(entity);
@@ -154,8 +146,7 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
      * Description:更新实体的信息
      *
      * @param entity 要更新的对象
-     * @return vip.efactory.embp.base.util.R
-     * @author dbdu
+     * @return R
      */
     public R updateById(T1 entity) {
         entity.setUpdateTime(null);    // 数据库自己更新此字段
@@ -165,9 +156,8 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
     /**
      * Description:使用entityId删除单个实体,
      *
-     * @param 使用实体的id来删除对象
-     * @return vip.efactory.embp.base.util.R
-     * @author dbdu
+     * @param entityId 使用实体的id来删除对象
+     * @return R
      */
     public R deleteById(Long entityId) {
 
@@ -180,7 +170,6 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
      * @param q      查询额值
      * @param fields 需要模糊匹配的字段
      * @return 当前的泛型实体, 包含高级查询参数
-     * @author dbdu
      */
     @SneakyThrows
     private T1 buildQueryConditions(String q, String fields) {

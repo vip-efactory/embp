@@ -38,8 +38,6 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
 
     /**
      * Description:无参构造函数，获得T的clazz对象
-     *
-     * @author dbdu
      */
     public BaseServiceImpl() {
         //为了得到T1的Class，采用如下方法

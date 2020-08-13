@@ -18,9 +18,9 @@ public interface IBaseService<T> extends IService<T> {
     /**
      * Description: 高级搜索＋分页处理
      *
-     * @param [page, entity]
+     * @param page 分页条件
+     * @param entity 条件实体
      * @return com.baomidou.mybatisplus.core.metadata.IPage<T>
-     * @author dbdu
      */
     IPage<T> advanceSearch(IPage<T> page, T entity);
 
@@ -28,9 +28,8 @@ public interface IBaseService<T> extends IService<T> {
     /**
      * Description: 高级搜索不分页，最多显示300条记录,防止内存占用过高！
      *
-     * @param [entity]
+     * @param entity 条件实体
      * @return java.util.List<T>
-     * @author dbdu
      */
     List<T> advanceSearch(T entity);
 

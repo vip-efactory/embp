@@ -1,19 +1,21 @@
 package vip.efactory.embp.base.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import vip.efactory.common.base.entity.BaseSearchField;
+import vip.efactory.common.base.enums.SearchTypeEnum;
+import vip.efactory.common.base.utils.CommUtil;
+import vip.efactory.common.i18n.enums.CommDBEnum;
 import vip.efactory.embp.base.entity.BaseEntity;
-import vip.efactory.embp.base.entity.BaseSearchField;
-import vip.efactory.embp.base.enums.SearchRelationEnum;
-import vip.efactory.embp.base.enums.SearchTypeEnum;
+import vip.efactory.common.base.utils.R;
 import vip.efactory.embp.base.service.IBaseService;
-import vip.efactory.embp.base.util.CommUtil;
-import vip.efactory.embp.base.util.R;
+
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -28,7 +30,7 @@ import java.util.Set;
  * @author dbdu
  */
 @Slf4j
-@SuppressWarnings("unchecked")
+@SuppressWarnings("all")
 public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
 
     @Autowired
@@ -81,7 +83,7 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
     public R getPropertySet(String property, String value) {
         // 属性名不允许为空
         if (StringUtils.isEmpty(property)) {
-            return R.failed("查询的属性名不允许为空!");
+            return R.error(CommDBEnum.SELECT_PROPERTY_NAME_NOT_EMPTY);
         }
 
         return R.ok(entityService.advanceSearchProperty(property, value));
@@ -204,7 +206,6 @@ public class BaseController<T1 extends BaseEntity, T2 extends IBaseService> {
                 condition.setVal(q);
                 conditions.add(condition);
             }
-            entity.setRelationType(SearchRelationEnum.OR.getValue());  // 所有条件或的关系
             entity.setConditions(conditions);
         }
         return entity;

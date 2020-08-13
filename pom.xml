@@ -12,13 +12,15 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <spring.boot.version>2.1.6.RELEASE</spring.boot.version>
-        <mybatis-plus.version>3.1.0</mybatis-plus.version>
+        <spring.boot.version>2.3.0.RELEASE</spring.boot.version>
+        <mybatis-plus.version>3.3.2</mybatis-plus.version>
         <mysql.connector.version>8.0.16</mysql.connector.version>
-        <hutool.version>4.4.5</hutool.version>
+        <hutool.version>5.3.10</hutool.version>
         <beanutils.version>1.9.4</beanutils.version>
         <swagger-starter.version>1.9.0.RELEASE</swagger-starter.version>
-        <lombok.version>1.18.8</lombok.version>
+        <lombok.version>1.18.12</lombok.version>
+        <common.i18n.version>1.2.1</common.i18n.version>
+        <common.base.version>1.0.0</common.base.version>
     </properties>
     <dependencies>
         <dependency>
@@ -55,6 +57,17 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-extension</artifactId>
             <version>${mybatis-plus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.efactory</groupId>
+            <artifactId>common-base</artifactId>
+            <version>${common.base.version}</version>
+        </dependency>
+        <!-- 引入国际化的依赖 -->
+        <dependency>
+            <groupId>vip.efactory</groupId>
+            <artifactId>common-i18n</artifactId>
+            <version>${common.i18n.version}</version>
         </dependency>
         <!--hutool-->
         <dependency>

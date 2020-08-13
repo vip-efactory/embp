@@ -29,3 +29,6 @@ hs_err_pid*
 将删除 pom.xml
 将删除 src/
 将删除 target/
+/.idea/
+/target/
+/embp.iml

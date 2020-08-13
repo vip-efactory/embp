@@ -4,17 +4,18 @@ package vip.efactory.embp.base.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import vip.efactory.common.base.entity.BaseSearchField;
+import vip.efactory.common.base.enums.ConditionRelationEnum;
+import vip.efactory.common.base.enums.SearchTypeEnum;
+import vip.efactory.common.base.utils.CommUtil;
+import vip.efactory.common.base.utils.MapUtil;
+import vip.efactory.common.base.utils.SQLFilter;
 import vip.efactory.embp.base.entity.BaseEntity;
-import vip.efactory.embp.base.entity.BaseSearchField;
-import vip.efactory.embp.base.enums.SearchRelationEnum;
-import vip.efactory.embp.base.enums.SearchTypeEnum;
+
 import vip.efactory.embp.base.service.IBaseService;
-import vip.efactory.embp.base.util.CommUtil;
-import vip.efactory.embp.base.util.MapUtil;
-import vip.efactory.embp.base.util.SQLFilter;
+
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -26,7 +27,7 @@ import java.util.*;
  * by dbdu
  */
 @Slf4j
-public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> extends ServiceImpl<M, T> implements IBaseService<T> {
+public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> extends BaseObservable<M,T> implements IBaseService<T>, BaseObserver<M,T> {
 
     /**
      * Description:获取T的Class对象是关键，看构造方法
@@ -100,7 +101,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
      */
     private QueryWrapper<T> getQueryWrapper(T entity) {
         Set<BaseSearchField> conditions = entity.getConditions();   //查询条件集合
-        int searchRelation = entity.getRelationType() != null ? entity.getRelationType() : 0;       // 与或非,默认或的关系
+        int searchRelation = 0;       // 与或非,默认0或的关系
         // 检查属性名和属性值的合法性
         checkPropertyAndValueValidity(entity);
 
@@ -109,7 +110,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
 
         // 处理OR 或者AND的逻辑
         QueryWrapper<T> queryWrapper;
-        if (searchRelation == SearchRelationEnum.OR.getValue()) {
+        if (searchRelation == ConditionRelationEnum.OR.getValue()) {
             queryWrapper = getOrQueryWrapper(conditions);
         } else {
             queryWrapper = getAndQueryWrapper(conditions);
@@ -218,7 +219,6 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
                     }
 
                 }
-                return wrapper;
             });
         }
         return queryWrapper;
@@ -241,7 +241,6 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
                     //　根据搜索条件不同构造不同的查询语句
                     createFieldCondition(wrapper, condition);
                 }
-                return wrapper;
             });
         }
         return queryWrapper;
@@ -284,6 +283,48 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> exte
                 log.warn("未知的搜索条件！");
                 break;
         }
+    }
+
+    // ######################################################################################
+    // 注意下面的三个方法是是维护多表关联查询结果缓存的一致性的，除非你知道在做什么，否则不要去修改!         #
+    // 三个方法是：registObservers,notifyOthers,update                                        #
+    // 此处使用了jdk自带的观察者的设计模式。  当前对象既是被观察者，也是观察者!                          #
+    // ######################################################################################
+
+    /**
+     * 注册观察者,即哪些组件观察自己，让子类调用此方法实现观察者注册
+     */
+    public void registObservers(BaseObserver<M,T>... baseObservers) {
+        for (BaseObserver<M,T> baseObserver : baseObservers) {
+            this.addBaseObserver(baseObserver);
+        }
+    }
+
+    /**
+     * 自己的状态改变了，通知所有依赖自己的组件进行缓存清除，
+     * 通常的增删改的方法都需要调用这个方法，来维持 cache right!
+     */
+    public void notifyOthers() {
+        //注意在用Java中的Observer模式的时候i下面这句话不可少
+        this.setChanged();
+        // 然后主动通知， 这里用的是推的方式
+        // this.notifyObservers(this.content);
+        // 如果用拉的方式，这么调用
+        this.notifyBaseObservers();
+    }
+
+    /**
+     * 这是观察别人，别人更新了之后来更新自己的
+     * 其实此处不需要被观察者的任何数据，只是为了知道被观察者状态变了，自己的相关缓存也就需要清除了，否则不一致
+     * 例如：观察Ａ对象，但是Ａ对象被删除了，那个自己这边关联查询与Ａ有关的缓存都应该清除
+     * 子类重写此方法在方法前面加上清除缓存的注解，或者在方法体内具体执行一些清除缓存的代码。
+     *
+     * @param o   被观察的对象
+     * @param arg 传递的数据
+     */
+    @Override
+    public void update(BaseObservable<M,T> o, Object arg) {
+
     }
 
 }

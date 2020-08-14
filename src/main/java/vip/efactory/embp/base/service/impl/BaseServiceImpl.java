@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import vip.efactory.common.base.entity.BaseSearchField;
 import vip.efactory.common.base.enums.ConditionRelationEnum;
 import vip.efactory.common.base.enums.SearchTypeEnum;
@@ -25,6 +24,7 @@ import java.util.*;
  * 当然，也可以在这里添加调用前的检查逻辑
  * by dbdu
  */
+@SuppressWarnings("ALL")
 @Slf4j
 public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
         extends BaseObservable<M, T>
@@ -287,9 +287,9 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
     /**
      * 注册观察者,即哪些组件观察自己，让子类调用此方法实现观察者注册
      */
-    @Async
-    public void registObservers(BaseObserver<M, T>... baseObservers) {
-        for (BaseObserver<M, T> baseObserver : baseObservers) {
+    @Override
+    public void registObservers(BaseObserver... baseObservers) {
+        for (BaseObserver baseObserver : baseObservers) {
             this.addBaseObserver(baseObserver);
         }
     }
@@ -298,7 +298,7 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
      * 自己的状态改变了，通知所有依赖自己的组件进行缓存清除，
      * 通常的增删改的方法都需要调用这个方法，来维持 cache right!
      */
-    @Async
+    @Override
     public void notifyOthers() {
         //注意在用Java中的Observer模式的时候i下面这句话不可少
         this.setChanged();
@@ -318,9 +318,9 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
      * @param arg 传递的数据
      */
     @Override
-    @Async
-    public void update(BaseObservable<M, T> o, Object arg) {
+    public void update(BaseObservable o, Object arg) {
 
     }
 
 }
+

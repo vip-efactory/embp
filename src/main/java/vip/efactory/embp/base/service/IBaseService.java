@@ -3,6 +3,9 @@ package vip.efactory.embp.base.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.scheduling.annotation.Async;
+import vip.efactory.embp.base.service.impl.BaseObservable;
+import vip.efactory.embp.base.service.impl.BaseObserver;
 
 
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.Set;
  *
  * @author dbdu
  */
+@SuppressWarnings("ALL")
 public interface IBaseService<T> extends IService<T> {
 
     /**
@@ -41,5 +45,30 @@ public interface IBaseService<T> extends IService<T> {
      * @return Set 集合
      */
     Set advanceSearchProperty(String property, String value);
+
+    /**
+     * 注册观察者,即哪些组件观察自己，让子类调用此方法实现观察者注册
+     */
+    @Async
+    void registObservers(BaseObserver... baseObservers);
+
+    /**
+     * 自己的状态改变了，通知所有依赖自己的组件进行缓存清除，
+     * 通常的增删改的方法都需要调用这个方法，来维持 cache right!
+     */
+    @Async
+    void notifyOthers();
+
+    /**
+     * 这是观察别人，别人更新了之后来更新自己的
+     * 其实此处不需要被观察者的任何数据，只是为了知道被观察者状态变了，自己的相关缓存也就需要清除了，否则不一致
+     * 例如：观察Ａ对象，但是Ａ对象被删除了，那个自己这边关联查询与Ａ有关的缓存都应该清除
+     * 子类重写此方法在方法前面加上清除缓存的注解，或者在方法体内具体执行一些清除缓存的代码。
+     *
+     * @param o   被观察的对象
+     * @param arg 传递的数据
+     */
+    @Async
+    void update(BaseObservable o, Object arg);
 
 }

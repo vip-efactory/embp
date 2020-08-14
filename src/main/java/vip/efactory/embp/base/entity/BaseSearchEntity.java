@@ -7,16 +7,17 @@ import lombok.Getter;
 import lombok.Setter;
 import vip.efactory.common.base.entity.BaseSearchField;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * Description: 基础的高级搜索实体
- *
+ * Model 已经实现的序列化接口，此处不需要再实现了
  * @author dbdu
  */
 @Setter
 @Getter
-public class BaseSearchEntity<T extends Model> extends Model {
+public class BaseSearchEntity<T extends Model<T>> extends Model<T> {
 
     /**
      * 数据库不存这个字段

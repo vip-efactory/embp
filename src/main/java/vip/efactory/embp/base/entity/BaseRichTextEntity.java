@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * Description:富文本实体基类
  *
@@ -12,7 +14,8 @@ import lombok.Setter;
  */
 @Setter
 @Getter
-public class BaseRichTextEntity<T extends BaseEntity> extends BaseEntity<T> {
+public class BaseRichTextEntity<T extends BaseEntity<T>> extends BaseEntity<T> {
+
     /**
      * ID
      */

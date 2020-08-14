@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import vip.efactory.common.base.entity.BaseSearchField;
 import vip.efactory.common.base.enums.ConditionRelationEnum;
 import vip.efactory.common.base.enums.SearchTypeEnum;
@@ -13,9 +14,7 @@ import vip.efactory.common.base.utils.CommUtil;
 import vip.efactory.common.base.utils.MapUtil;
 import vip.efactory.common.base.utils.SQLFilter;
 import vip.efactory.embp.base.entity.BaseEntity;
-
 import vip.efactory.embp.base.service.IBaseService;
-
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -27,12 +26,12 @@ import java.util.*;
  * by dbdu
  */
 @Slf4j
-public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> extends BaseObservable<M,T> implements IBaseService<T>, BaseObserver<M,T> {
+public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
+        extends BaseObservable<M, T>
+        implements IBaseService<T>, BaseObserver<M, T> {
 
     /**
      * Description:获取T的Class对象是关键，看构造方法
-     *
-     * @author dbdu
      */
     private Class<T> clazz = null;
 
@@ -51,7 +50,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     }
 
     @Override
-    public IPage<T> advanceSearch(IPage<T> page, T entity) {
+    public IPage<T> advancedQuery(T entity, IPage<T> page) {
         // 构建查询条件
         QueryWrapper<T> queryWrapper = getQueryWrapper(entity);
         // 执行查询
@@ -59,7 +58,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     }
 
     @Override
-    public List<T> advanceSearch(T entity) {
+    public List<T> advancedQuery(T entity) {
         // 构建查询条件
         QueryWrapper<T> queryWrapper = getQueryWrapper(entity);
         // 执行查询
@@ -93,9 +92,8 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     /**
      * Description: 利用实体来构建查询条件
      *
-     * @param [entity]
+     * @param entity 实体
      * @return com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<T>
-     * @author dbdu
      */
     private QueryWrapper<T> getQueryWrapper(T entity) {
         Set<BaseSearchField> conditions = entity.getConditions();   //查询条件集合
@@ -119,9 +117,8 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     /**
      * Description:检查属性名和属性值的合法性,不合法的属性和值都会被移除
      *
-     * @param [conditions]
+     * @param entity 检查高级搜索条件是否合法的实体
      * @return void
-     * @author dbdu
      */
     private void checkPropertyAndValueValidity(T entity) {
         Set<BaseSearchField> conditions = entity.getConditions();
@@ -165,7 +162,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     /**
      * 检查属性名是否非法
      *
-     * @param 属性名
+     * @param property 属性名
      * @return true--非法;false--合法
      */
     @SneakyThrows
@@ -180,9 +177,8 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     /**
      * Description: 对象的属性名转换为数据表的字段名
      *
-     * @param [conditions]
+     * @param conditions 条件集合
      * @return void
-     * @author dbdu
      */
     private void property2Column(Set<BaseSearchField> conditions) {
         if (conditions != null && conditions.size() > 0) {
@@ -197,7 +193,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     /**
      * Description: --OR关系 条件构造,所有的条件满足一个就会选中
      *
-     * @param [conditions]
+     * @param conditions 条件集合
      * @return com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<T>
      * @author dbdu
      */
@@ -225,7 +221,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     /**
      * Description:---与的关系,所有的条件全部满足才会选中
      *
-     * @param [conditions]
+     * @param conditions 条件集合
      * @return com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<T>
      * @author dbdu
      */
@@ -249,7 +245,6 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
      *
      * @param [wrapper, condition]
      * @return void
-     * @author dbdu
      */
     private void createFieldCondition(QueryWrapper<T> wrapper, BaseSearchField condition) {
         switch (SearchTypeEnum.getByValue(condition.getSearchType())) {
@@ -292,8 +287,9 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
     /**
      * 注册观察者,即哪些组件观察自己，让子类调用此方法实现观察者注册
      */
-    public void registObservers(BaseObserver<M,T>... baseObservers) {
-        for (BaseObserver<M,T> baseObserver : baseObservers) {
+    @Async
+    public void registObservers(BaseObserver<M, T>... baseObservers) {
+        for (BaseObserver<M, T> baseObserver : baseObservers) {
             this.addBaseObserver(baseObserver);
         }
     }
@@ -302,6 +298,7 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
      * 自己的状态改变了，通知所有依赖自己的组件进行缓存清除，
      * 通常的增删改的方法都需要调用这个方法，来维持 cache right!
      */
+    @Async
     public void notifyOthers() {
         //注意在用Java中的Observer模式的时候i下面这句话不可少
         this.setChanged();
@@ -321,7 +318,8 @@ public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity<T>> e
      * @param arg 传递的数据
      */
     @Override
-    public void update(BaseObservable<M,T> o, Object arg) {
+    @Async
+    public void update(BaseObservable<M, T> o, Object arg) {
 
     }
 

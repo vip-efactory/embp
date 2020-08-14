@@ -4,6 +4,7 @@ package vip.efactory.embp.base.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+
 import java.util.List;
 import java.util.Set;
 
@@ -16,22 +17,21 @@ import java.util.Set;
 public interface IBaseService<T> extends IService<T> {
 
     /**
-     * Description: 高级搜索＋分页处理
-     *
-     * @param page 分页条件
-     * @param entity 条件实体
-     * @return com.baomidou.mybatisplus.core.metadata.IPage<T>
-     */
-    IPage<T> advanceSearch(IPage<T> page, T entity);
-
-
-    /**
      * Description: 高级搜索不分页，最多显示300条记录,防止内存占用过高！
      *
      * @param entity 条件实体
      * @return java.util.List<T>
      */
-    List<T> advanceSearch(T entity);
+    List<T> advancedQuery(T entity);
+
+    /**
+     * Description: 高级模糊查询及分页
+     *
+     * @param entity   包含高级查询条件的实体
+     * @param page 分页参数对象
+     * @return IPage<T>
+     */
+    IPage<T> advancedQuery(T entity, IPage<T> page);
 
     /**
      * 查询某个属性集合,不包含重复数据

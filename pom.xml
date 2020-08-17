@@ -21,6 +21,8 @@
         <lombok.version>1.18.12</lombok.version>
         <common.i18n.version>1.2.1</common.i18n.version>
         <common.base.version>1.0.0</common.base.version>
+<!--        <validation.api.version>2.0.1.Final</validation.api.version>-->
+        <hibernate.validator.version>6.1.5.Final</hibernate.validator.version>
     </properties>
     <dependencies>
         <dependency>
@@ -94,6 +96,18 @@
             <groupId>com.spring4all</groupId>
             <artifactId>swagger-spring-boot-starter</artifactId>
             <version>${swagger-starter.version}</version>
+        </dependency>
+        <!-- 实体属性校验注解 -->
+<!--        <dependency>-->
+<!--            <groupId>javax.validation</groupId>-->
+<!--            <artifactId>validation-api</artifactId>-->
+<!--            <version>${validation.api.version}</version>-->
+<!--        </dependency>-->
+        <!-- 实体属性校验 -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate.validator.version}</version>
         </dependency>
     </dependencies>
 

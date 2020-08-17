@@ -1,2 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-
+    vip.efactory.embp.base.config.MybatisPlusConfiguration,\
+    vip.efactory.common.i18n.config.LocaleConfig,\
+    vip.efactory.common.i18n.enums.ErrorCodeUtil

@@ -188,6 +188,11 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
         if (!errors.isEmpty()) {
             return R.error(CommAPIEnum.PROPERTY_CHECK_FAILED).setData(errors);
         }
+        // 擦除基础字段的信息，基础字段只能由后端自己维护
+        entity.setCreateTime(null);
+        entity.setUpdateTime(null);
+        entity.setCreatorNum(null);
+        entity.setUpdaterNum(null);
         boolean isOK = entityService.save(entity);
         return isOK ? R.ok() : R.error(CommDBEnum.UNKNOWN);
     }
@@ -219,7 +224,11 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
             }
         }
         //检查业务key的存在性，不应该存在重复的业务key,此处不知道业务key是什么属性，可以在在service层实现，重写方法即可！
-        entity.setUpdateTime(null);    // 数据库自己更新此字段
+        // 擦除基础字段的信息，基础字段只能由后端自己维护
+        entity.setCreateTime(null);
+        entity.setUpdateTime(null);
+        entity.setCreatorNum(null);
+        entity.setUpdaterNum(null);
         boolean isOK = entityService.updateById(entity);
         return isOK ? R.ok() : R.error(CommDBEnum.UNKNOWN);
     }

@@ -15,6 +15,7 @@ import vip.efactory.common.base.utils.SQLFilter;
 import vip.efactory.embp.base.entity.BaseEntity;
 import vip.efactory.embp.base.service.IBaseService;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -87,6 +88,16 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
         }
 
         return new TreeSet();
+    }
+
+    /**
+     * 根据主键判断实体是否存在
+     * @param id 主键
+     * @return boolean true存在，false 不存在
+     */
+    @Override
+    public boolean existsById(Serializable id) {
+        return null != getById(id);
     }
 
     /**

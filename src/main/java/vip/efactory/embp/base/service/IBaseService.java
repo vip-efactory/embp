@@ -8,6 +8,7 @@ import vip.efactory.embp.base.service.impl.BaseObservable;
 import vip.efactory.embp.base.service.impl.BaseObserver;
 
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
@@ -45,6 +46,15 @@ public interface IBaseService<T> extends IService<T> {
      * @return Set 集合
      */
     Set advanceSearchProperty(String property, String value);
+
+    /**
+     * Description: 根据ID检查实体是否存在
+     *
+     * @param var1 id主键
+     * @return boolean true存在，false 不存在
+     */
+    boolean existsById(Serializable var1);
+
 
     /**
      * 注册观察者,即哪些组件观察自己，让子类调用此方法实现观察者注册

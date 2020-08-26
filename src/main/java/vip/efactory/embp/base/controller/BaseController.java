@@ -28,8 +28,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 
@@ -126,6 +126,20 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
     }
 
     /**
+     * Description:同一个值,在多个字段中模糊查询,不分页
+     *
+     * @param q      模糊查询的值
+     * @param fields 例如:"name,address,desc",对这三个字段进行模糊匹配
+     * @return R
+     */
+    public R queryMutiField(String q, String fields) {
+        // 构造高级查询条件
+        T1 be = buildQueryConditions(q, fields);
+        List<T1> entities = entityService.advancedQuery(be);
+        return R.ok().setData(entities);
+    }
+
+    /**
      * Description:同一个值,在多个字段中模糊查询,分页
      *
      * @param q      模糊查询的值
@@ -139,23 +153,6 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
         IPage<T1> entities = entityService.advancedQuery(be, page);
         EPage ePage = new EPage(entities.getCurrent(), entities.getTotal(), entities.getSize(), entities.getPages(), entities.getRecords());
         return R.ok().setData(ePage);
-    }
-
-    /**
-     * 获取某个属性集合,去除重复,通常是前端选择需要,支持模糊匹配
-     * 非法属性自动过滤掉
-     *
-     * @param property 驼峰式的属性
-     * @param value    模糊查询的value值
-     * @return R
-     */
-    public R getPropertySet(String property, String value) {
-        // 属性名不允许为空
-        if (StringUtils.isEmpty(property)) {
-            return R.error(CommDBEnum.SELECT_PROPERTY_NAME_NOT_EMPTY);
-        }
-
-        return R.ok(entityService.advanceSearchProperty(property, value));
     }
 
     /**
@@ -280,6 +277,16 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
     }
 
     /**
+     * Description:检查操作的idd对应实体是否存在，因为多人操作，可能被其他人删除了！
+     *
+     * @param entityId 实体主键id
+     * @return Boolean
+     */
+    public Boolean chkEntityIdExist(Serializable entityId) {
+        return null != entityId && entityService.existsById(entityId);
+    }
+
+    /**
      * Description:根据查询值及多字段,来构建高级查询条件
      *
      * @param q      查询额值
@@ -315,6 +322,22 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
         return entity;
     }
 
+    /**
+     * 获取某个属性集合,去除重复,通常是前端选择需要,支持模糊匹配
+     * 非法属性自动过滤掉
+     *
+     * @param property 驼峰式的属性
+     * @param value    模糊查询的value值
+     * @return R
+     */
+    public R getPropertySet(String property, String value) {
+        // 属性名不允许为空
+        if (StringUtils.isEmpty(property)) {
+            return R.error(CommDBEnum.SELECT_PROPERTY_NAME_NOT_EMPTY);
+        }
+
+        return R.ok(entityService.advanceSearchProperty(property, value));
+    }
 
 }
 

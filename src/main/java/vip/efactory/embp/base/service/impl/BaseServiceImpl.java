@@ -33,7 +33,8 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
         extends BaseObservable<M, T>
         implements IBaseService<T>, BaseObserver<M, T> {
 
-    private final String DEFAULT_GROUP_NAME = "DEFAULT_NO_GROUP"; // 默认组的名称
+    // 默认组的名称
+    private final String DEFAULT_GROUP_NAME = "DEFAULT_NO_GROUP";
 
     /**
      * Description:获取T的Class对象是关键，看构造方法
@@ -66,8 +67,8 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
     public List<T> advancedQuery(T entity) {
         // 构建查询条件
         QueryWrapper<T> queryWrapper = getQueryWrapper(entity);
-        // 执行查询
-        queryWrapper.last("limit 300");    //最多返回300条记录
+        // 执行查询，最多返回300条记录
+        queryWrapper.last("limit 300");
         return baseMapper.selectList(queryWrapper);
     }
 
@@ -83,12 +84,14 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
         // 取第一个条件,来构建查询条件
 
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
+        // 最多返回300条记录
         queryWrapper.select(property)
                 .like(property, value)
-                .last("limit 300");    //最多返回300条记录
+                .last("limit 300");
         List<Object> result = baseMapper.selectObjs(queryWrapper);
         if (result != null && result.size() > 0) {
-            return new TreeSet<Object>(result); // 去除重复数据
+            // 去除重复数据
+            return new TreeSet<Object>(result);
         }
 
         return new TreeSet();
@@ -112,8 +115,10 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
      * @return com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<T>
      */
     private QueryWrapper<T> getQueryWrapper(T entity) {
-        Set<BaseSearchField> conditions = entity.getConditions();   //查询条件集合
-        int searchRelation = 0;       // 与或非,默认0或的关系
+        // 查询条件集合
+        Set<BaseSearchField> conditions = entity.getConditions();
+        // 与或非,默认0或的关系
+        int searchRelation = 0;
         // 检查属性名和属性值的合法性
         checkPropertyAndValueValidity(entity);
 
@@ -130,16 +135,6 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
             // 有多个组
             return handleGroupsCondition(groups, entity);
         }
-
-
-//        // 处理OR 或者AND的逻辑
-//        QueryWrapper<T> queryWrapper;
-//        if (searchRelation == ConditionRelationEnum.OR.getValue()) {
-//            queryWrapper = getOrQueryWrapper(conditions);
-//        } else {
-//            queryWrapper = getAndQueryWrapper(conditions);
-//        }
-//        return queryWrapper;
     }
 
     /**
@@ -154,8 +149,8 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
             return;
         }
 
-        // 检查属性名是否合法 非法
-        Set<BaseSearchField> illegalConditions = new HashSet<>();        //存放非法的查询条件
+        // 检查属性名是否合法 非法，存放非法的查询条件
+        Set<BaseSearchField> illegalConditions = new HashSet<>();
         Map<String, String> properties = (Map<String, String>) MapUtil.objectToMap1(entity);
         Set<String> keys = properties.keySet();
         // 如果条件的字段名称与属性名不符，则移除，不作为选择条件；
@@ -167,7 +162,7 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
         // 移除非法的条件
         conditions.removeAll(illegalConditions);
 
-        //继续检查条件的值是否有非法敏感的关键字
+        // 继续检查条件的值是否有非法敏感的关键字
         conditions.forEach(condition -> {
             String value1 = condition.getVal();
             if (SQLFilter.sqlInject(value1)) {
@@ -217,57 +212,6 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
 
     }
 
-
-    /**
-     * Description: --OR关系 条件构造,所有的条件满足一个就会选中
-     *
-     * @param conditions 条件集合
-     * @return com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<T>
-     * @author dbdu
-     */
-    private QueryWrapper<T> getOrQueryWrapper(Set<BaseSearchField> conditions) {
-        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
-        if (conditions != null && conditions.size() > 0) {
-            Iterator iterator = conditions.iterator();
-            queryWrapper.and(wrapper -> {
-                while (iterator.hasNext()) {
-                    BaseSearchField condition = (BaseSearchField) iterator.next();
-
-                    // 根据搜索条件不同构造不同的查询语句
-                    createFieldCondition(wrapper, condition);
-                    // 如果还有下一个就加上or的条件
-                    if (iterator.hasNext()) {
-                        wrapper.or();
-                    }
-
-                }
-            });
-        }
-        return queryWrapper;
-    }
-
-    /**
-     * Description:---与的关系,所有的条件全部满足才会选中
-     *
-     * @param conditions 条件集合
-     * @return com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<T>
-     * @author dbdu
-     */
-    private QueryWrapper<T> getAndQueryWrapper(Set<BaseSearchField> conditions) {
-        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
-        if (conditions != null && conditions.size() > 0) {
-            Iterator iterator = conditions.iterator();
-            queryWrapper.and(wrapper -> {
-                while (iterator.hasNext()) {
-                    BaseSearchField condition = (BaseSearchField) iterator.next();
-                    // 根据搜索条件不同构造不同的查询语句
-                    createFieldCondition(wrapper, condition);
-                }
-            });
-        }
-        return queryWrapper;
-    }
-
     /**
      * Description: 每个条件构造SQL语句
      *
@@ -276,47 +220,61 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
      */
     private void createFieldCondition(QueryWrapper<T> wrapper, BaseSearchField condition) {
         switch (SearchTypeEnum.getByValue(condition.getSearchType())) {
-            case EQ:            // 等于条件
+            case EQ:
+                // 等于条件
                 wrapper.eq(condition.getName(), condition.getVal());
                 break;
-            case RANGE:         //  范围条件
+            case RANGE:
+                //  范围条件
                 wrapper.between(condition.getName(), condition.getVal(), condition.getVal2());
                 break;
-            case NE:            //  不等于条件
+            case NE:
+                //  不等于条件
                 wrapper.ne(condition.getName(), condition.getVal());
                 break;
-            case LT:            //  小于
+            case LT:
+                //  小于
                 wrapper.lt(condition.getName(), condition.getVal());
                 break;
-            case LE:            //  小于等于
+            case LE:
+                //  小于等于
                 wrapper.le(condition.getName(), condition.getVal());
                 break;
-            case GT:            //  大于条件
+            case GT:
+                //  大于条件
                 wrapper.gt(condition.getName(), condition.getVal());
                 break;
-            case GE:            //  大于等于
+            case GE:
+                //  大于等于
                 wrapper.ge(condition.getName(), condition.getVal());
                 break;
-            case IS_NULL:       // IS_NULL(8, "Null值查询"),
+            case IS_NULL:
+                // IS_NULL(8, "Null值查询"),
                 wrapper.isNull(condition.getName());
                 break;
-            case NOT_NULL:      // NOT_NULL(9, "非Null值查询")
+            case NOT_NULL:
+                // NOT_NULL(9, "非Null值查询")
                 wrapper.isNotNull(condition.getName());
                 break;
-            case LEFT_LIKE:     // LEFT_LIKE(10, "左模糊查询")
+            case LEFT_LIKE:
+                // LEFT_LIKE(10, "左模糊查询")
                 wrapper.likeLeft(condition.getName(), condition.getVal());
                 break;
-            case RIGHT_LIKE:    // RIGHT_LIKE(11, "右模糊查询")
+            case RIGHT_LIKE:
+                // RIGHT_LIKE(11, "右模糊查询")
                 wrapper.likeRight(condition.getName(), condition.getVal());
                 break;
-            case IN:            // IN(12, "包含查询")
+            case IN:
+                // IN(12, "包含查询")
                 wrapper.in(condition.getName(), getListFromStringValue(condition));
                 break;
-            case NOT_IN:        // IN(13, "不包含查询") ejpa内置不支持
+            case NOT_IN:
+                // IN(13, "不包含查询") ejpa内置不支持
                 // 切分属性值为集合
                 wrapper.notIn(condition.getName(), getListFromStringValue(condition));
                 break;
-            case FUZZY:         //  模糊条件
+            case FUZZY:
+                //  模糊条件
                 wrapper.like(condition.getName(), condition.getVal());
                 break;
             default:
@@ -326,8 +284,8 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
     }
 
     private List<String> getListFromStringValue(BaseSearchField condition) {
-        // 切分属性值为集合
-        String[] values = condition.getVal().split(",|;|、|，|；"); // 支持的分隔符：中英文的逗号分号，和中文的顿号！
+        // 切分属性值为集合，支持的分隔符：中英文的逗号分号，和中文的顿号！
+        String[] values = condition.getVal().split(",|;|、|，|；");
         return Arrays.asList(values);
     }
 
@@ -336,26 +294,32 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
      */
     private Map<String, List<BaseSearchField>> checkHasGroup(Set<BaseSearchField> conditions) {
         Map<String, List<BaseSearchField>> groups = new HashMap<>();
-        groups.put(DEFAULT_GROUP_NAME, new ArrayList<BaseSearchField>()); //存放没有明确分组的条件
+        // 存放没有明确分组的条件
+        groups.put(DEFAULT_GROUP_NAME, new ArrayList<BaseSearchField>());
 
         // 遍历所有的条件进行分组
         for (BaseSearchField searchField : conditions) {
             String groupName = searchField.getBracketsGroup();
 
-            if (StringUtils.isEmpty(groupName)) { // 条件没有分组信息
+            if (StringUtils.isEmpty(groupName)) {
+                // 条件没有分组信息
                 groups.get(DEFAULT_GROUP_NAME).add(searchField);
-            } else { // 条件有分组信息
+            } else {
+                // 条件有分组信息
                 // 检查groups是否有此分组，有则用，没有则创建
                 if (groups.get(groupName) == null) {
-                    groups.put(groupName, new ArrayList<BaseSearchField>()); //创建新的分组，
+                    // 创建新的分组
+                    groups.put(groupName, new ArrayList<BaseSearchField>());
                 }
-                groups.get(groupName).add(searchField);    // 再将条件放进去
+                // 再将条件放进去
+                groups.get(groupName).add(searchField);
             }
         }
 
         // 对所有的分组按照 order排序
         for (Map.Entry<String, List<BaseSearchField>> entry : groups.entrySet()) {
-            entry.getValue().sort(Comparator.comparingInt(BaseSearchField::getOrder));  // 条件排序,排序后默认是升序
+            // 条件排序,排序后默认是升序
+            entry.getValue().sort(Comparator.comparingInt(BaseSearchField::getOrder));
         }
 
         return groups;
@@ -374,12 +338,14 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
             }
 
             QueryWrapper<T> tmpGroupP = handleSingleGroupCondition(entry.getValue(), entity);
-            if (tmpGroupP == null) { // 若也为空则没有必要继续进行了！
+            if (tmpGroupP == null) {
+                // 若也为空则没有必要继续进行了！
                 continue;
             }
 
             // 从组内的一个条件里找到组的逻辑关系
-            if (defaultGroupP == null) { // 当默认组条件为空时，defaultGroupP为null，不处理会导致空指针异常！
+            if (defaultGroupP == null) {
+                // 当默认组条件为空时，defaultGroupP为null，不处理会导致空指针异常！
                 defaultGroupP = tmpGroupP;
             } else {
                 Integer logicalTypeGroup = entry.getValue().get(0).getLogicalTypeGroup();

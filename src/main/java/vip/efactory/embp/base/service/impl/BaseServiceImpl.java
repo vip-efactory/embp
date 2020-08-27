@@ -117,8 +117,6 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
     private QueryWrapper<T> getQueryWrapper(T entity) {
         // 查询条件集合
         Set<BaseSearchField> conditions = entity.getConditions();
-        // 与或非,默认0或的关系
-        int searchRelation = 0;
         // 检查属性名和属性值的合法性
         checkPropertyAndValueValidity(entity);
 
@@ -130,10 +128,10 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
 
         // 判断条件是否只有一个默认组，若是一个组，则说明没有组
         if (groups.size() == 1) {
-            return handleSingleGroupCondition(groups.get(DEFAULT_GROUP_NAME), entity);
+            return handleSingleGroupCondition(groups.get(DEFAULT_GROUP_NAME));
         } else {
             // 有多个组
-            return handleGroupsCondition(groups, entity);
+            return handleGroupsCondition(groups);
         }
     }
 
@@ -328,16 +326,16 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
     /**
      * 处理多个分组条件的，条件查询构造
      */
-    private QueryWrapper<T> handleGroupsCondition(Map<String, List<BaseSearchField>> groups, T entity) {
+    private QueryWrapper<T> handleGroupsCondition(Map<String, List<BaseSearchField>> groups) {
         // 先处理默认组的queryWrapper
-        QueryWrapper<T> defaultGroupP = handleSingleGroupCondition(groups.get(DEFAULT_GROUP_NAME), entity);
+        QueryWrapper<T> defaultGroupP = handleSingleGroupCondition(groups.get(DEFAULT_GROUP_NAME));
         // 处理其他组
         for (Map.Entry<String, List<BaseSearchField>> entry : groups.entrySet()) {
             if (DEFAULT_GROUP_NAME.equalsIgnoreCase(entry.getKey())) {
                 continue;
             }
 
-            QueryWrapper<T> tmpGroupP = handleSingleGroupCondition(entry.getValue(), entity);
+            QueryWrapper<T> tmpGroupP = handleSingleGroupCondition(entry.getValue());
             if (tmpGroupP == null) {
                 // 若也为空则没有必要继续进行了！
                 continue;
@@ -363,7 +361,7 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
     /**
      * 处理同一个组内查询条件的查询条件转换
      */
-    private QueryWrapper<T> handleSingleGroupCondition(List<BaseSearchField> conditions, T entity) {
+    private QueryWrapper<T> handleSingleGroupCondition(List<BaseSearchField> conditions) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         if (conditions != null && conditions.size() > 0) {
             long size = conditions.size();

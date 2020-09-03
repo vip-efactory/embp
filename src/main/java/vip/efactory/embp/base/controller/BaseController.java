@@ -133,6 +133,9 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
      * @return R
      */
     public R queryMutiField(String q, String fields) {
+        if (StringUtils.isEmpty(fields)){
+            return R.error(CommDBEnum.SELECT_PROPERTY_NAME_NOT_EMPTY);
+        }
         // 构造高级查询条件
         T1 be = buildQueryConditions(q, fields);
         List<T1> entities = entityService.advancedQuery(be);
@@ -148,6 +151,9 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
      * @return R
      */
     public R queryMutiField(String q, String fields, Page page) {
+        if (StringUtils.isEmpty(fields)){
+            return R.error(CommDBEnum.SELECT_PROPERTY_NAME_NOT_EMPTY);
+        }
         // 构造高级查询条件
         T1 be = buildQueryConditions(q, fields);
         IPage<T1> entities = entityService.advancedQuery(be, page);
@@ -290,7 +296,7 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
      * Description:根据查询值及多字段,来构建高级查询条件
      *
      * @param q      查询额值
-     * @param fields 需要模糊匹配的字段
+     * @param fields 需要模糊匹配的字段，支持的分隔符：中英文的逗号分号，和中文的顿号！
      * @return 当前的泛型实体, 包含高级查询参数
      */
     @SneakyThrows
@@ -300,26 +306,20 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
         if (!CommUtil.isMutiHasNull(q, fields)) {
             Set<BaseSearchField> conditions = new HashSet<>();
             // 判断filds是一个字段还是多个字段,若是多个字段则进行切分
-            if (fields.contains(",")) {
-                String[] rawFields = StringUtils.split(fields, ",");
-                for (String c : rawFields) {
-                    BaseSearchField condition = new BaseSearchField();
-                    condition.setName(c);
-                    condition.setSearchType(SearchTypeEnum.FUZZY.getValue());
-                    condition.setVal(q);
-                    conditions.add(condition);
-                }
-            } else {
-                // 构建模糊查询的条件
+            // 切分属性值为集合，支持的分隔符：中英文的逗号分号，和中文的顿号！
+            String[] rawFields = fields.split(",|;|、|，|；");
+            for (String c : rawFields) {
+                // 构建默认OR的多字段模糊查询
                 BaseSearchField condition = new BaseSearchField();
-                condition.setName(fields);
+                condition.setName(c);
                 condition.setSearchType(SearchTypeEnum.FUZZY.getValue());
                 condition.setVal(q);
                 conditions.add(condition);
             }
             entity.setConditions(conditions);
+            return entity;
         }
-        return entity;
+        return null;
     }
 
     /**

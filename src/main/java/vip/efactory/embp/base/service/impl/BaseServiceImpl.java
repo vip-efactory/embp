@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import vip.efactory.common.base.entity.BaseSearchField;
 import vip.efactory.common.base.enums.ConditionRelationEnum;
@@ -20,7 +21,6 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Description:这个类是BaseServcie的实现类，组件的实现类可以继承这个类来利用可以用的方法
@@ -117,6 +117,9 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
     private QueryWrapper<T> getQueryWrapper(T entity) {
         // 查询条件集合
         Set<BaseSearchField> conditions = entity.getConditions();
+        if (CollectionUtils.isEmpty(conditions)) {
+            return new QueryWrapper<>();
+        }
         // 检查属性名和属性值的合法性
         checkPropertyAndValueValidity(entity);
 
@@ -335,22 +338,25 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
                 continue;
             }
 
-            QueryWrapper<T> tmpGroupP = handleSingleGroupCondition(entry.getValue());
-            if (tmpGroupP == null) {
-                // 若也为空则没有必要继续进行了！
-                continue;
-            }
-
             // 从组内的一个条件里找到组的逻辑关系
             if (defaultGroupP == null) {
+                QueryWrapper<T> tmpGroupP = handleSingleGroupCondition(entry.getValue());
+                if (tmpGroupP == null) {
+                    // 若也为空则没有必要继续进行了！
+                    continue;
+                }
                 // 当默认组条件为空时，defaultGroupP为null，不处理会导致空指针异常！
                 defaultGroupP = tmpGroupP;
             } else {
                 Integer logicalTypeGroup = entry.getValue().get(0).getLogicalTypeGroup();
                 if (logicalTypeGroup == ConditionRelationEnum.AND.getValue()) {
-                    defaultGroupP.and((Consumer<QueryWrapper<T>>) tmpGroupP);
+                    defaultGroupP.and(queryWrapper -> {
+                        handleSingleGroupCondition(queryWrapper, entry.getValue());
+                    });
                 } else {
-                    defaultGroupP.or((Consumer<QueryWrapper<T>>) tmpGroupP);
+                    defaultGroupP.or(queryWrapper -> {
+                        handleSingleGroupCondition(queryWrapper, entry.getValue());
+                    });
                 }
             }
         }
@@ -363,6 +369,25 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
      */
     private QueryWrapper<T> handleSingleGroupCondition(List<BaseSearchField> conditions) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
+        if (conditions != null && conditions.size() > 0) {
+            long size = conditions.size();
+            for (int i = 0; i < size; i++) {
+                BaseSearchField condition = conditions.get(i);
+                // 根据condition的关联条件进行与其他条件的关联
+                if (condition.getLogicalType() == 0) {
+                    queryWrapper.or();
+                }
+                // 根据搜索条件不同构造不同的查询语句
+                createFieldCondition(queryWrapper, condition);
+            }
+        }
+        return queryWrapper;
+    }
+
+    /**
+     * 处理同一个组内查询条件的查询条件转换,不需要内部生成queryWrapper，自己传入，多分组时候使用
+     */
+    private QueryWrapper<T> handleSingleGroupCondition(QueryWrapper<T> queryWrapper, List<BaseSearchField> conditions) {
         if (conditions != null && conditions.size() > 0) {
             long size = conditions.size();
             for (int i = 0; i < size; i++) {

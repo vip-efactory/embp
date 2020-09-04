@@ -132,7 +132,7 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
      * @param fields 例如:"name,address,desc",对这三个字段进行模糊匹配
      * @return R
      */
-    public R queryMutiField(String q, String fields) {
+    public R queryMultiField(String q, String fields) {
         if (StringUtils.isEmpty(fields)){
             return R.error(CommDBEnum.SELECT_PROPERTY_NAME_NOT_EMPTY);
         }
@@ -150,7 +150,7 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
      * @param page   分页参数对象
      * @return R
      */
-    public R queryMutiField(String q, String fields, Page page) {
+    public R queryMultiField(String q, String fields, Page page) {
         if (StringUtils.isEmpty(fields)){
             return R.error(CommDBEnum.SELECT_PROPERTY_NAME_NOT_EMPTY);
         }
@@ -297,7 +297,7 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
      *
      * @param q      查询额值
      * @param fields 需要模糊匹配的字段，支持的分隔符：中英文的逗号分号，和中文的顿号！
-     * @return 当前的泛型实体, 包含高级查询参数
+     * @return T1 当前的泛型实体, 包含高级查询参数
      */
     @SneakyThrows
     private T1 buildQueryConditions(String q, String fields) {

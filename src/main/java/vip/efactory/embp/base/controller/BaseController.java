@@ -73,7 +73,7 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
 
     public R getByPage(Page page) {
         IPage<T1> entities = entityService.page(page);
-        EPage ePage = new EPage(entities.getCurrent(), entities.getTotal(), entities.getSize(), entities.getPages(), entities.getRecords());
+        EPage ePage = new EPage(entities);
         return R.ok().setData(ePage);
     }
 
@@ -105,11 +105,10 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
             if (page.ascs() == null && page.descs() == null) {
                 page.setDesc("create_time");
             }
-
-            return R.ok(entityService.page(page, wrapper));
+            return R.ok(new EPage(entityService.page(page, wrapper)));
         } else {
             // 高级搜索查询,支持分页
-            return R.ok(entityService.advancedQuery(entity, page));
+            return R.ok(new EPage(entityService.advancedQuery(entity, page)));
         }
     }
 
@@ -157,7 +156,7 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
         // 构造高级查询条件
         T1 be = buildQueryConditions(q, fields);
         IPage<T1> entities = entityService.advancedQuery(be, page);
-        EPage ePage = new EPage(entities.getCurrent(), entities.getTotal(), entities.getSize(), entities.getPages(), entities.getRecords());
+        EPage ePage = new EPage(entities);
         return R.ok().setData(ePage);
     }
 

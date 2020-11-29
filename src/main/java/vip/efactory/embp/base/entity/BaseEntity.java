@@ -2,7 +2,6 @@ package vip.efactory.embp.base.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
@@ -28,6 +27,7 @@ public abstract class BaseEntity<T extends BaseSearchEntity<T>> extends BaseSear
     /**
      * Description:备注
      */
+    @ApiModelProperty(value = "备注", name = "remark")
     private String remark;
 
     /**

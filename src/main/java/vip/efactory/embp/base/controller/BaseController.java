@@ -86,18 +86,7 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
      * @return R
      */
     public R advancedQueryByPage(Page page, T1 entity) {
-        // 过滤掉值为null或空串的无效高级搜索条件
-        if (entity.getConditions() != null && entity.getConditions().size() > 0) {
-            Set<Object> removeConditions = new HashSet<>();
-            for (Object searchField : entity.getConditions()) {
-                // 当搜索值为null或者空串时,这是一条无效的搜索条件,需要移除
-                if (CommUtil.isEmptyString(((BaseSearchField) searchField).getVal())) {
-                    removeConditions.add(searchField);
-                }
-            }
-            entity.getConditions().removeAll(removeConditions);
-        }
-
+        checkConditionValNull(entity);
         if (entity.getConditions() == null || entity.getConditions().size() == 0) {
             // 默认的分页功能
             QueryWrapper<T1> wrapper = new QueryWrapper<>(entity);
@@ -112,7 +101,6 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
         }
     }
 
-
     /**
      * Description:高级搜索查询,返回最多300记录的列表,不分页
      *
@@ -120,9 +108,34 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
      * @return R
      */
     public R advancedQuery(T1 entity) {
+        checkConditionValNull(entity);
         // 高级搜索查询,返回最多300记录的列表
         return R.ok(entityService.advancedQuery(entity));
     }
+
+    /**
+     * Description:过滤掉值为null或空串的无效高级搜索条件;空值或非空值查询是不需要值的
+     * @param entity 包含高级搜索条件的实体
+     */
+    private void checkConditionValNull(T1 entity) {
+        // 过滤掉值为null或空串的无效高级搜索条件
+        if (entity.getConditions() != null && entity.getConditions().size() > 0) {
+            Set<Object> removeConditions = new HashSet<>();
+            for (Object searchField : entity.getConditions()) {
+                BaseSearchField condition = (BaseSearchField) searchField;
+                // 空值或非空值查询是不需要值的
+                if (SearchTypeEnum.IS_NULL.getValue() == condition.getSearchType() || SearchTypeEnum.NOT_NULL.getValue() == condition.getSearchType()){
+                    continue;
+                }
+                // 当搜索值为null或者空串时,这是一条无效的搜索条件,需要移除
+                if (CommUtil.isEmptyString(condition.getVal())) {
+                    removeConditions.add(searchField);
+                }
+            }
+            entity.getConditions().removeAll(removeConditions);
+        }
+    }
+
 
     /**
      * Description:同一个值,在多个字段中模糊查询,不分页

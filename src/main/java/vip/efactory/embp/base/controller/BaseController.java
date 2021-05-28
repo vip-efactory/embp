@@ -27,10 +27,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -124,7 +121,13 @@ public class BaseController<T1 extends BaseEntity<T1>, T2 extends IBaseService<T
             for (Object searchField : entity.getConditions()) {
                 BaseSearchField condition = (BaseSearchField) searchField;
                 // 空值或非空值查询是不需要值的
-                if (SearchTypeEnum.IS_NULL.getValue() == condition.getSearchType() || SearchTypeEnum.NOT_NULL.getValue() == condition.getSearchType()){
+                List<Integer> unNeedValueList = new ArrayList<>();
+                unNeedValueList.add(SearchTypeEnum.IS_NULL.getValue());
+                unNeedValueList.add(SearchTypeEnum.NOT_NULL.getValue());
+                unNeedValueList.add(SearchTypeEnum.IS_EMPTY_STRING.getValue());
+                unNeedValueList.add(SearchTypeEnum.NOT_EMPTY_STRING.getValue());
+
+                if (unNeedValueList.contains(condition.getSearchType())) {
                     continue;
                 }
                 // 当搜索值为null或者空串时,这是一条无效的搜索条件,需要移除

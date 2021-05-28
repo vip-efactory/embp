@@ -274,6 +274,14 @@ public class BaseServiceImpl<T extends BaseEntity<T>, M extends BaseMapper<T>>
                 // 切分属性值为集合
                 wrapper.notIn(condition.getName(), getListFromStringValue(condition));
                 break;
+            case IS_EMPTY_STRING:
+                // IS_EMPTY_STRING(14, "是空串")
+                wrapper.eq(condition.getName(), "");
+                break;
+            case NOT_EMPTY_STRING:
+                // NOT_EMPTY_STRING(15, "非空串")
+                wrapper.ne(condition.getName(), "");
+                break;
             case FUZZY:
                 //  模糊条件
                 wrapper.like(condition.getName(), condition.getVal());
